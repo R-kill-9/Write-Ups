@@ -52,4 +52,4 @@ El archivo `/usr/bin/bash` tiene el SUID bit activo, lo que significa que culqui
 
 Así entonces, si ejecutamos el comando `/usr/bin/bash -p` spawneamos una nueva shell con privilegios de root.
 
-![rootflag](https://github.com/R-kill-9/HTB-WriteUps/blob/main/Editorial-writeup/Images/rootflag.png)
+![rootflag](Images/rootflag.png)
