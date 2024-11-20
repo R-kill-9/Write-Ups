@@ -2,7 +2,7 @@
 
 To begin, we ran an **nmap** scan on the target machine's IP to identify the open ports.
 
-![Nmap](https://github.com/R-kill-9/HTB-WriteUps/blob/main/Editorial-writeup/Images/Nmap.png)
+![Nmap](Images/Nmap.png)
 
 We observed that port 80 was open, so we checked the website.  
 
@@ -10,7 +10,7 @@ As usual, we performed directory fuzzing and found a potential attack vector in 
 ```bash
 gobuster dir -u http://editorial.htb  -w /usr/share/wordlists/dirbuster/directory-list-lowercase-2.3-medium.txt -t 200
 ```
-![upload](https://github.com/R-kill-9/HTB-WriteUps/blob/main/Editorial-writeup/Images/upload.png)
+![upload](Images/upload.png)
 
 After trying to upload various types of files with malicious payloads without success, I noticed the input field next to it, which allows us to insert a URL. The first thing that came to mind was to attempt an **SSRF** (Server-Side Request Forgery) by searching for common configuration files.
 
@@ -18,11 +18,11 @@ When that didn’t work, I decided to try fuzzing for open ports. I captured the
 ```bash
 ffuf -u http://editorial.htb/upload-cover -X POST -request request.txr -w ports.txt -fs 61
 ```
-![ffuf](https://github.com/R-kill-9/HTB-WriteUps/blob/main/Editorial-writeup/Images/ffuf.png)
+![ffuf](Images/ffuf.png)
 
 If we send the request referencing one of these open ports and capture the response with **Burpsuite**, we see that we are provided with a specific endpoint.
 
-![response ssrf](https://github.com/R-kill-9/HTB-WriteUps/blob/main/Editorial-writeup/Images/response%20ssrf.png)
+![response ssrf](Images/response%20ssrf.png)
 
 Visiting that endpoint in the browser, a file is downloaded with the following content:
 ```bash
@@ -34,11 +34,11 @@ After visiting several endpoints and performing the SSRF (Server-Side Request Fo
 ```
 If we try to access via SSH using the credentials from the message, we succeed.
 
-![reverseshell](https://github.com/R-kill-9/HTB-WriteUps/blob/main/Editorial-writeup/Images/reverseshell.png)
+![reverseshell](Images/reverseshell.png)
 
 With this, we can obtain the user flag.
 
-![userflag](https://github.com/R-kill-9/HTB-WriteUps/blob/main/Editorial-writeup/Images/userflag.png)
+![userflag](Images/userflag.png)
 
 
 # Root flag
@@ -46,10 +46,10 @@ To start the privilege escalation, I tried running `sudo -l`, but our user is no
 
 To facilitate the privilege escalation process, we used `linpeas`. When executing it, we found the following:
 
-![linpeas](https://github.com/R-kill-9/HTB-WriteUps/blob/main/Editorial-writeup/Images/linpeas.png)
+![linpeas](Images/linpeas.png)
 
 The file `/usr/bin/bash` has the SUID bit set, which means that any user executing the file will do so with the permissions of the file owner, in this case `root`.
 
 Therefore, if we run the command `/usr/bin/bash -p` we can spawn a new root shell.
 
-![rootflag](https://github.com/R-kill-9/HTB-WriteUps/blob/main/Editorial-writeup/Images/rootflag.png)
+![rootflag](Images/rootflag.png)
