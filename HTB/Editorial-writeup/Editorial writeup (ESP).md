@@ -2,14 +2,14 @@
 
 Para empezar, ejecutamos un nmap sobre la IP de la máquina target con lo que vemos cuales son los puertos que tiene abiertos.
 
-![Nmap](https://github.com/R-kill-9/HTB-WriteUps/blob/main/Editorial-writeup/Images/Nmap.png)
+![Nmap](Images/Nmap.png)
 
 Observamos que el puerto 80 está abierto por lo que consultamos la página web.
 Como de costumbre, hacemos fuzzing de directorios y encontramos un potencial vector de ataque en el directiorio `upload`.
 ```bash
 gobuster dir -u http://editorial.htb  -w /usr/share/wordlists/dirbuster/directory-list-lowercase-2.3-medium.txt -t 200
 ```
-![upload](https://github.com/R-kill-9/HTB-WriteUps/blob/main/Editorial-writeup/Images/upload.png)
+![upload](Images/upload.png)
 
 Después de intentar subir varios tipos de archivos con payloads maliciosos sin éxito, me fijé en el otro campo de input, que nos permite insertar una URL. Lo primero que se me ocurrió fue ejecutar un SSRF buscando archivos de configuración típicos.
 
@@ -19,11 +19,11 @@ Después de que esto no funcionara decidí probar con los puertos. Para ello cap
 ```bash
 ffuf -u http://editorial.htb/upload-cover -X POST -request request.txr -w ports.txt -fs 61
 ```
-![ffuf](https://github.com/R-kill-9/HTB-WriteUps/blob/main/Editorial-writeup/Images/ffuf.png)
+![ffuf](Images/ffuf.png)
 
 Si lanzamos la petición haciendo referencia a este puerto y capturamos la respuesta con Burpsuite, vemos que se nos proporciona un endpoint específico.
 
-![response ssrf](https://github.com/R-kill-9/HTB-WriteUps/blob/main/Editorial-writeup/Images/response%20ssrf.png)
+![response ssrf](Images/response%20ssrf.png)
 
 Si visitamos dicho endpoint en el navegador se nos descarga un archivo con el siguiente contenido:
 ```bash
@@ -35,18 +35,18 @@ Si visitamos dicho endpoint en el navegador se nos descarga un archivo con el si
 ```
 Si probamos a acceder con ssh usando las credenciales del mensaje tenemos éxito.
 
-![reverseshell](https://github.com/R-kill-9/HTB-WriteUps/blob/main/Editorial-writeup/Images/reverseshell.png)
+![reverseshell](Images/reverseshell.png)
 
 Y ya con esto podemos obtener la flag de user.
 
-![userflag](https://github.com/R-kill-9/HTB-WriteUps/blob/main/Editorial-writeup/Images/userflag.png)
+![userflag](Images/userflag.png)
 
 # Root flag
 Para empezar la escalada de privilegios intenté ejecutar `sudo -l` pero nuestro usuario no está en el grupo de sudoers. Posteriormente listé el directorio `/home` encontrando el usuario `prod`.
 
 Para facilitar el proceso de escalada de privilegios utilizamos **linpeas**. Al ejecutarlo encontramos lo siguiente: 
 
-![linpeas](https://github.com/R-kill-9/HTB-WriteUps/blob/main/Editorial-writeup/Images/linpeas.png)
+![linpeas](Images/linpeas.png)
 
 El archivo `/usr/bin/bash` tiene el SUID bit activo, lo que significa que culquier usuario que ejecute el archivo lo hará con los permisos del dueño del archivo, en este caso root. 
 
